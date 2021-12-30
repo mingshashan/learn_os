@@ -6,42 +6,42 @@
 # with %cs = 0 %ip = 7c00
 
 
-.set PROT_MODE_CSEG,    0x8
-.set PROT_MODE_DSEG,    0x10
-.set CR0_PE_ON,         0x1
+.set PROT_MODE_CSEG,        0x8                     # kernel code segment selector
+.set PROT_MODE_DSEG,        0x10                    # kernel data segment selector
+.set CR0_PE_ON,             0x1                     # protected mode enable flag
 
 
 # start address should be 0:7c00, in real model, the beginning address of thre running bootloader
 .globl start
 start:
-.code16                 # Assemble for 16-bit mode
-    cli                 # disable interrupts
-    cld                 # string operations increment
+.code16                                             # Assemble for 16-bit mode
+    cli                                             # Disable interrupts
+    cld                                             # String operations increment
 
-    # set up the import data segment registers (DS, ES, SS)
-    xorw %ax, %ax       # Segment number zero
-    movw %ax, %ds       # -> Date Segment
-    movw %ax, %es       # -> Extra Segment
-    movw %ax, %ss       # -> Stack Segment
+    # Set up the important data segment registers (DS, ES, SS).
+    xorw %ax, %ax                                   # Segment number zero
+    movw %ax, %ds                                   # -> Data Segment
+    movw %ax, %es                                   # -> Extra Segment
+    movw %ax, %ss                                   # -> Stack Segment
 
     # Enable A20:
     # For backwards compatibility with the earliest PCs, physical
     # address line 20 is tied low, so that addresses higher than
     # 1MB wrap around to zero by default, This code undose this
 seta20.1:
-    inb $0x64, %al      # Wait for no busy
+    inb $0x64, %al                                  # Wait for not busy
     testb $0x2, %al
     jnz seta20.1
 
-    movb $0xd1, %al     # 0xd1 -> port 0x64
+    movb $0xd1, %al                                 # 0xd1 -> port 0x64
     outb %al, $0x64
 
 seta20.2:
-    inb $0x64, %al      # Wait for no busy
+    inb $0x64, %al                                  # Wait for not busy
     testb $0x2, %al
     jnz seta20.2
 
-    movb $0xdf, %al     # 0xdf -> port 0x60
+    movb $0xdf, %al                                 # 0xdf -> port 0x60
     outb %al, $0x60
 
     # Switch form real to protected mode, using a bootstrap GDT
@@ -58,18 +58,17 @@ seta20.2:
     ljmp $PROT_MODE_CSEG, $protcseg
 
 
-.code32         # Assemble for 32-bit mode
+.code32                                             # Assemble for 32-bit mode
 protcseg:
     # Set up the protected-mode data segment registers
-    movw $PROT_MODE_DSEG, %ax       # Out data segment selector
-    movw %ax, %ds                   # -> DS: Data segment
-    movw %ax, %es                   # -> ES: Extra segment
-    movw %ax, %fs                   # -> FS
-    movw %ax, %gs                   # -> GS
-    movw %ax, %ss                   # -> SS: Stack segment
+    movw $PROT_MODE_DSEG, %ax                       # Our data segment selector
+    movw %ax, %ds                                   # -> DS: Data Segment
+    movw %ax, %es                                   # -> ES: Extra Segment
+    movw %ax, %fs                                   # -> FS
+    movw %ax, %gs                                   # -> GS
+    movw %ax, %ss                                   # -> SS: Stack Segment
 
-
-    # Set up the stack pointer and call into C. The stack region is form 0--start(0x7c00)
+    # Set up the stack pointer and call into C. The stack region is from 0--start(0x7c00)
     movl $0x0, %ebp
     movl $start, %esp
     call bootmain
@@ -80,11 +79,12 @@ spin:
 
 .data
 # Bootstrap GDT
-.p2align 2          # force 4 byte alignment
+.p2align 2                                          # force 4 byte alignment
 gdt:
-    SEG_NULLASM
-    SEG_ASM(STA_X|STA_R, 0x0, 0xffffffff)
-    SEG_ASM(STA_W, 0x0, 0xffffffff)
+    SEG_NULLASM                                     # null seg
+    SEG_ASM(STA_X|STA_R, 0x0, 0xffffffff)           # code seg for bootloader and kernel
+    SEG_ASM(STA_W, 0x0, 0xffffffff)                 # data seg for bootloader and kernel
+
 
 gdtdesc:
     .word 0x17      # sizeof(gdt) -1
