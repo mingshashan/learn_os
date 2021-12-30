@@ -35,6 +35,8 @@ QEMU := $(shell if which qemu-system-i386 > /dev/null; \
 	echo "***" 1>&2; exit 1; fi)
 endif
 
+
+
 # eliminate default suffix rules
 .SUFFIXES: .c .S .h
 
