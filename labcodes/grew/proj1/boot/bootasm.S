@@ -76,20 +76,18 @@ protcseg:
 
     # If bootmain returns (it shouldn't), loop.
 spin:
-    jump spin
+    jmp spin
 
 .data
 # Bootstrap GDT
 .p2align 2          # force 4 byte alignment
-.get:
+gdt:
     SEG_NULLASM
-    SEG_ASM(STA_X|STAR, 0x0, 0xffffffff)
+    SEG_ASM(STA_X|STA_R, 0x0, 0xffffffff)
     SEG_ASM(STA_W, 0x0, 0xffffffff)
 
-.gdtdesc:
+gdtdesc:
     .word 0x17      # sizeof(gdt) -1
     .long gdt       # address gdt
-
-
 
 
