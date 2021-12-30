@@ -78,7 +78,7 @@ static void serial_print(int c) {
 /**
  *
  */
-static void console_print(int c) {
+static void console_printc(int c) {
     
     
     lpt_print(c);
@@ -90,9 +90,9 @@ static void console_print(int c) {
 }
 
 
-static void console_print(const char *str) {
+static void console_prints(const char *str) {
     while(*str != '\0') {
-        console_print(*str++);
+        console_printc(*str++);
     }
 }
 
@@ -104,7 +104,7 @@ static void console_print(const char *str) {
  * @author xx
  */
 void bootmain(void) {
-    console_print("This is a bootloader: Hello world!");    
+    console_prints("This is a bootloader: Hello world!");    
 
     while(1);
 }

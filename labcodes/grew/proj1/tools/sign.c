@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (0 != stat(argv[1], &st)) {
-        fprintf(stderr, "Error opening file '%s': %s\n", argv[1], stderror(errno));
+        fprintf(stderr, "Error opening file '%s': %s\n", argv[1], strerror(errno));
         return -1;
     }
 
